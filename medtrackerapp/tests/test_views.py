@@ -150,7 +150,7 @@ class DoseLogViewTests(APITestCase):
 
 # retrieve
     def test_retrieve_doselog_valid_id(self):
-        url = reverse("doselog-detail", args=[self.log.id])  # <-- self.log.id
+        url = reverse("doselog-detail", args=[self.log.id])  
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["medication"], self.med.id)
@@ -163,7 +163,7 @@ class DoseLogViewTests(APITestCase):
 
 # update
     def test_update_doselog_valid_data(self):
-        url = reverse("doselog-detail", args=[self.log.id])  # <-- self.log.id
+        url = reverse("doselog-detail", args=[self.log.id])  
         data = {
             "medication": self.med.id,
             "taken_at": "2025-12-01T09:00:00Z",
@@ -174,7 +174,7 @@ class DoseLogViewTests(APITestCase):
         self.assertEqual(response.data["was_taken"], False)
 
     def test_update_doselog_invalid_data(self):
-        url = reverse("doselog-detail", args=[self.log.id])  # <-- self.log.id
+        url = reverse("doselog-detail", args=[self.log.id])  
         data = {
             "medication": None,
             "taken_at": "invalid-date",
@@ -188,13 +188,26 @@ class DoseLogViewTests(APITestCase):
 
 # delete
     def test_delete_doselog_valid_id(self):
-        url = reverse("doselog-detail", args=[self.log.id])  # <-- self.log.id
+        url = reverse("doselog-detail", args=[self.log.id])  
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(DoseLog.objects.count(), 0)
 
     def test_delete_doselog_invalid_id(self):
-        url = reverse("doselog-detail", args=[999])  #non-existent ID
+        url = reverse("doselog-detail", args=[999]) 
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+# filter by date
+    def test_filter_by_date_success(self):
+        url = reverse("doselog-filter-by-date")
+        response = self.client.get(url + "?start=2025-12-01&end=2025-12-02")
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_filter_by_date_missing_params(self):
+        url = reverse("doselog-filter-by-date")
+        response = self.client.get(url + "?start=&end=")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.data)
