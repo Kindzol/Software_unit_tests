@@ -100,7 +100,7 @@ class MedicationModelTests(TestCase):
         tomorrow = today + timedelta(days=1)
         self.assertEqual(med.adherence_rate_over_period(today, tomorrow), 0.0)
 
-
+# tests for fetch_external_info method in Medication model
     def test_fetch_external_info_exception(self):
         med = Medication.objects.create(name="Aspirin", dosage_mg=100, prescribed_per_day=2)
         with patch("medtrackerapp.models.DrugInfoService.get_drug_info") as mock_service:

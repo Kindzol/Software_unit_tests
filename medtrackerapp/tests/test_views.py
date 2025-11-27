@@ -198,3 +198,16 @@ class DoseLogViewTests(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+# filter by date
+    def test_filter_by_date_success(self):
+        url = reverse("doselog-filter-by-date")
+        response = self.client.get(url + "?start=2025-12-01&end=2025-12-02")
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(len(response.data), 1)
+
+    def test_filter_by_date_missing_params(self):
+        url = reverse("doselog-filter-by-date")
+        response = self.client.get(url + "?start=&end=")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.data)
