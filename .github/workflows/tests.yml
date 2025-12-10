@@ -57,3 +57,4 @@ jobs:
           DATABASE_URL: postgres://kstopyra:Kinga2004@localhost:5432/medtracker_db
         run: |
           python manage.py test medtrackerapp/tests
+          
