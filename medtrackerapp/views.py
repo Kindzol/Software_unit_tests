@@ -51,6 +51,26 @@ class MedicationViewSet(viewsets.ModelViewSet):
             return Response(data, status=status.HTTP_502_BAD_GATEWAY)
         return Response(data)
 
+    @action(detail=True, methods=["get"], url_path="expected-doses")
+    def expected_doses(self, request, pk=None):
+        medication = self.get_object()
+        days = request.query_params.get("days")
+        try:
+            if days is None:
+                raise ValueError("Missing 'days' parameter")
+            days = int(days)
+            expected_doses = medication.expected_doses(days)
+            return Response({
+                "medication_id": medication.id,
+                "days": days,
+                "expected_doses": expected_doses
+            }, status=status.HTTP_200_OK)
+        except (ValueError, TypeError) as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 class DoseLogViewSet(viewsets.ModelViewSet):
     """
