@@ -32,7 +32,7 @@ class Medication(models.Model):
         """
         logs = self.doselog_set.all()
         if not logs.exists():
-            return "0"
+            return 0.0
         taken = logs.filter(was_taken=True).count()
         return round((taken / logs.count()) * 100, 2)
 
