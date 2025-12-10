@@ -129,9 +129,17 @@ class DoseLog(models.Model):
         return f"{self.medication.name} at {when} - {status}"
 
 class DoctorsNote(models.Model):
+    """
+    Represents a doctor's note associated with a medication.
+    param medication: The medication the note is about.
+    param content: The content of the doctor's note.
+    param created_at: Timestamp when the note was created.
+    returns: A string representation of the doctor's note.
+    """
     medication = models.ForeignKey(Medication, on_delete=models.CASCADE, related_name='doctors_notes')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Return a brief summary of the doctor's note."""
         return f"Note for {self.medication.name}: {self.content[:20]}"

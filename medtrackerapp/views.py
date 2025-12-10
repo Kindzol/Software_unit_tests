@@ -136,10 +136,16 @@ class DoseLogViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class DoctorsNoteViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for viewing and managing doctor's notes.
+    """
     queryset = DoctorsNote.objects.all()
     serializer_class = DoctorsNoteSerializer
 
     def update(self, request, *args, **kwargs):
+        """
+        Disable updating of doctor's notes.
+        """
         return Response(
             {"error": "Updating notes is not allowed."},
             status=status.HTTP_405_METHOD_NOT_ALLOWED
