@@ -2,8 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils.dateparse import parse_date
-from .models import Medication, DoseLog
-from .serializers import MedicationSerializer, DoseLogSerializer
+from .models import Medication, DoseLog, DoctorsNote
+from .serializers import MedicationSerializer, DoseLogSerializer, DoctorsNoteSerializer
+
 
 class MedicationViewSet(viewsets.ModelViewSet):
     """
@@ -50,6 +51,34 @@ class MedicationViewSet(viewsets.ModelViewSet):
         if isinstance(data, dict) and data.get("error"):
             return Response(data, status=status.HTTP_502_BAD_GATEWAY)
         return Response(data)
+
+    @action(detail=True, methods=["get"], url_path="expected-doses")
+    def expected_doses(self, request, pk=None):
+        """
+        Return the expected number of doses for this medication over a specified number of days.
+        params:
+            - days (int): Number of days to calculate expected doses for. Must be a positive integer.
+
+        Returns:
+            Response:
+                - 200 OK: Expected doses calculated successfully.
+                - 400 BAD REQUEST: If 'days' parameter is missing or invalid.
+        """
+        medication = self.get_object()
+        days = request.query_params.get("days")
+        try:
+            days = int(days)
+            if days <= 0:
+                raise ValueError("Missing 'days' parameter")
+            days = int(days)
+            expected_doses = medication.expected_doses(days)
+            return Response({
+                "medication_id": medication.id,
+                "days": days,
+                "expected_doses": expected_doses
+            }, status=status.HTTP_200_OK)
+        except (ValueError, TypeError):
+            return Response({'error': "days must be a positive integer"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DoseLogViewSet(viewsets.ModelViewSet):
@@ -105,3 +134,19 @@ class DoseLogViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(logs, many=True)
         return Response(serializer.data)
+
+class DoctorsNoteViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for viewing and managing doctor's notes.
+    """
+    queryset = DoctorsNote.objects.all()
+    serializer_class = DoctorsNoteSerializer
+
+    def update(self, request, *args, **kwargs):
+        """
+        Disable updating of doctor's notes.
+        """
+        return Response(
+            {"error": "Updating notes is not allowed."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
